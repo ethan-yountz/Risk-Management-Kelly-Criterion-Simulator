@@ -1,0 +1,15 @@
+# Vercel Configuration
+# This file configures Vercel deployment settings
+
+# Build settings
+[build]
+command = "npm run build"
+publish = ".next"
+
+# Environment variables (add your Render backend URL here)
+[env]
+NEXT_PUBLIC_API_URL = "https://your-app-name.onrender.com"
+
+# Framework detection
+[framework]
+name = "nextjs"

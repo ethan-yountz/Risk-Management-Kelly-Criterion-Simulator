@@ -10,8 +10,8 @@ export default function Home() {
   const [finalOdds, setFinalOdds] = useState<string>("324");
   const [devigMethod, setDevigMethod] = useState<string>("worst_case");
   
-  // Temporary URL - change this to your Render URL when deployed
-  const API_URL = "http://localhost:8000";
+  // Use environment variable for API URL, fallback to localhost for development
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   const handleClick = async () => {
     try {
@@ -19,9 +19,11 @@ export default function Home() {
       const data = await response.json();
       
       if (data.output) {
-        alert(data.output.join('\n'));
+        const sanitizedOutput = data.output.join('\n').replace(/<[^>]*>/g, '');
+        alert(sanitizedOutput);
       } else if (data.error) {
-        alert(`Error: ${data.error}`);
+        const sanitizedError = data.error.replace(/<[^>]*>/g, '');
+        alert(`Error: ${sanitizedError}`);
       } else {
         alert("No output received");
       }
