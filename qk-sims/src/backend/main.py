@@ -20,8 +20,103 @@ def implied_prob(odds: float):
         return odds / (odds + 100)
 
 def multiplicative_devig(odds1: float, odds2: float):
+    """
+    Multiplicative devigging method - applies multiplicative margin equally to each outcome
+    """
     total_implied_prob = implied_prob(odds1) + implied_prob(odds2)
     return implied_prob(odds1) / total_implied_prob
+
+def additive_devig(odds1: float, odds2: float):
+    """
+    Additive devigging method - subtracts flat margin equally from each outcome
+    """
+    q1 = implied_prob(odds1)
+    q2 = implied_prob(odds2)
+    S = q1 + q2
+    overround = S - 1
+    
+    k = overround / 2
+    
+    p1 = q1 - k
+    p2 = q2 - k
+    
+    return p1
+
+def power_devig(odds1: float, odds2: float):
+    """
+    Power devigging method - applies multiplicative margin proportional to probability size
+    """
+    import math
+    
+    # Calculate implied probabilities
+    q1 = implied_prob(odds1)
+    q2 = implied_prob(odds2)
+    
+    # Total overround
+    S = q1 + q2
+    overround = S - 1
+    
+    # For power method, we need to solve for alpha such that:
+    # (q1^alpha + q2^alpha) / (q1^alpha + q2^alpha) = 1
+    # But we want to remove the overround, so we solve:
+    # (q1^alpha + q2^alpha) = 1
+    
+    # Use Newton-Raphson to solve for alpha
+    alpha = 1.0  # Initial guess
+    
+    for _ in range(20):  # Max iterations
+        # Calculate current sum
+        q1_alpha = q1 ** alpha
+        q2_alpha = q2 ** alpha
+        sum_powered = q1_alpha + q2_alpha
+        
+        # Error: we want sum_powered = 1
+        error = sum_powered - 1
+        
+        if abs(error) < 1e-8:
+            break
+            
+        # Derivative of sum_powered with respect to alpha
+        # d/dalpha(q1^alpha + q2^alpha) = q1^alpha * ln(q1) + q2^alpha * ln(q2)
+        derivative = q1_alpha * math.log(q1) + q2_alpha * math.log(q2)
+        
+        if abs(derivative) < 1e-10:  # Avoid division by zero
+            break
+            
+        # Newton-Raphson update
+        alpha = alpha - error / derivative
+        
+        # Ensure alpha stays positive
+        alpha = max(alpha, 0.01)
+    
+    # Apply power transform
+    q1_powered = q1 ** alpha
+    q2_powered = q2 ** alpha
+    
+    # Normalize
+    total_powered = q1_powered + q2_powered
+    p1 = q1_powered / total_powered
+    
+    # Return the fair probability for odds1
+    return p1
+
+def worst_case_devig(odds1: float, odds2: float):
+    """
+    Worst case devigging - takes the lowest implied probability from all methods
+    Returns tuple: (probability, method_name)
+    """
+    # Calculate all devig methods
+    methods = {
+        "multiplicative": multiplicative_devig(odds1, odds2),
+        "additive": additive_devig(odds1, odds2),
+        "power": power_devig(odds1, odds2)
+    }
+    
+    # Find the method with the lowest probability
+    min_method = min(methods.items(), key=lambda x: x[1])
+    
+    # Return tuple: (probability, method_name)
+    return min_method[1], min_method[0]
 
 def prob_to_american_odds(prob):
     if prob > 0.5:
@@ -60,7 +155,8 @@ def calculate_kelly_wager(fair_prob, payout_odds, bankroll, kelly_fraction):
         "kelly_wager": kelly_wager,
         "full_kelly": 100 * kelly_percentage,
         "half_kelly": 100 * kelly_percentage / 2,
-        "quarter_kelly": 100 * kelly_percentage / 4
+        "quarter_kelly": 100 * kelly_percentage / 4,
+        "is_profitable": kelly_percentage > 0
     }
 
 def seperate_odd_list(input_str: str):
@@ -123,8 +219,10 @@ def generate_leg_output(leg, leg_number):
         
         return f"Leg#{leg_number} ({leg['value']}%); Fair Value = {fair_odds:+} ({fair_percent:.1f}%)"
 
-def generate_complete_output(parsed_legs, final_odds, bankroll, kelly_fraction):
+def generate_complete_output(parsed_legs, final_odds, bankroll, kelly_fraction, devig_method="worst_case"):
     output = []
+    actual_method_used = devig_method  # Track which method was actually used
+    
     for i, leg in enumerate(parsed_legs):
         leg_output = generate_leg_output(leg, i + 1)
         output.append(leg_output)
@@ -132,7 +230,17 @@ def generate_complete_output(parsed_legs, final_odds, bankroll, kelly_fraction):
     total_fv = 1
     for i, leg in enumerate(parsed_legs):
         if leg["type"] == "odds":
-            fair_value = multiplicative_devig(leg["odds1"], leg["odds2"])
+            # Use the selected devig method
+            if devig_method == "multiplicative":
+                fair_value = multiplicative_devig(leg["odds1"], leg["odds2"])
+            elif devig_method == "additive":
+                fair_value = additive_devig(leg["odds1"], leg["odds2"])
+            elif devig_method == "power":
+                fair_value = power_devig(leg["odds1"], leg["odds2"])
+            elif devig_method == "worst_case":
+                fair_value, actual_method_used = worst_case_devig(leg["odds1"], leg["odds2"])
+            else:  # default fallback
+                fair_value = multiplicative_devig(leg["odds1"], leg["odds2"])
         else:
             fair_value = leg["value"] / 100
         total_fv *= fair_value
@@ -140,8 +248,29 @@ def generate_complete_output(parsed_legs, final_odds, bankroll, kelly_fraction):
     # Calculate Kelly wager using the helper function
     kelly_data = calculate_kelly_wager(total_fv, final_odds, bankroll, kelly_fraction)
     
+    # Add devig method to output header - show actual method used for worst_case
+    if devig_method == "worst_case":
+        method_display = {
+            "multiplicative": "Worst-case (Multiplicative)",
+            "additive": "Worst-case (Additive)", 
+            "power": "Worst-case (Power)"
+        }.get(actual_method_used, "Worst-case")
+    else:
+        method_display = {
+            "multiplicative": "Multiplicative",
+            "additive": "Additive",
+            "power": "Power"
+        }.get(devig_method, "Worst-case")
+    
+    output.insert(0, f"{method_display}")
     output.append(f"Final Odds: {final_odds}; Fair Value = {prob_to_american_odds(total_fv)} ({total_fv * 100:.1f}%)")
-    output.append(f"Summary: EV% = {kelly_data['edge_percent']:.1f}%, Kelly Wager = ${kelly_data['kelly_wager']:.2f} (Full={kelly_data['full_kelly']:.2f}u, 1/2={kelly_data['half_kelly']:.2f}u, 1/4={kelly_data['quarter_kelly']:.2f}u)")
+    
+    # Only show Kelly wager if it's profitable (positive)
+    if kelly_data['is_profitable']:
+        output.append(f"Summary: EV% = {kelly_data['edge_percent']:.1f}%, Kelly Wager = ${kelly_data['kelly_wager']:.2f} (Full={kelly_data['full_kelly']:.2f}u, 1/2={kelly_data['half_kelly']:.2f}u, 1/4={kelly_data['quarter_kelly']:.2f}u)")
+    else:
+        output.append(f"Summary: EV% = {kelly_data['edge_percent']:.1f}% - No profitable Kelly wager (negative edge)")
+    
     return output
 
 
@@ -163,11 +292,11 @@ def parse_odds(odds_str: str):
     return result
 
 @app.get("/calculate-bet")
-def calculate_bet(input_str: str, final_odds: int, bankroll: float, kelly_fraction: float):
+def calculate_bet(input_str: str, final_odds: int, bankroll: float, kelly_fraction: float, devig_method: str = "worst_case"):
     """Calculate the complete betting analysis"""
     try:
         parsed_legs = input_to_odds(input_str)
-        output = generate_complete_output(parsed_legs, final_odds, bankroll, kelly_fraction)
+        output = generate_complete_output(parsed_legs, final_odds, bankroll, kelly_fraction, devig_method)
         return {"output": output, "parsed_legs": parsed_legs}
     except Exception as e:
         return {"error": str(e), "input": input_str}

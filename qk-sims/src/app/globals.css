@@ -84,3 +84,14 @@ button {
 }
 
 /* Responsive design is handled by Tailwind CSS automatically */
+
+/* Navigation styles */
+nav a:hover {
+  background-color: #0056b3 !important;
+  color: #fff !important;
+}
+
+/* Page content spacing */
+main {
+  padding-top: 0;
+}
