@@ -5,7 +5,8 @@
 root_directory: .
 
 # Build command
-build: pip install --upgrade pip && pip install -r requirements.txt
+poetry install --no-root
+
 
 # Start command  
 start: uvicorn main:app --host 0.0.0.0 --port $PORT
