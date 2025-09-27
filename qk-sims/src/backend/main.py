@@ -12,6 +12,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def seperate_odd_list(input_str: str):
+    parts = [part.strip() for part in input_str.split(",")]
+    return parts
+
 def parse_odds_string(odds_str: str):
     if "/" in odds_str:
         # Split by "/" and convert to floats (two separate odds)
@@ -33,6 +37,14 @@ def parse_odds_string(odds_str: str):
         except ValueError:
             return None
 
+def input_to_odds(input_str: str):
+    parts = seperate_odd_list(input_str)
+    parsed_legs = []
+    for part in parts:
+        odds = parse_odds_string(part)
+        parsed_legs.append(odds)
+    return parsed_legs
+
 def implied_prob(odds: float):
     if odds > 0:
         return 100 / (odds + 100)
@@ -40,9 +52,32 @@ def implied_prob(odds: float):
         odds = abs(odds)
         return odds / (odds + 100)
 
+def convert_to_implied_prob(odds_list: dict):
+    implied_probs = []
+    for odds in odds_list:
+        if odds["type"] == "probability":
+            implied_probs.append(odds["value"] / 100)
+        elif odds["type"] == "odds":
+            prob1 = implied_prob(odds["odds1"])
+            prob2 = implied_prob(odds["odds2"])
+            implied_probs.extend([prob1, prob2])
+    return implied_probs
+    
 def multiplicative_devig(odds1: float, odds2: float):
     total_implied_prob = implied_prob(odds1) + implied_prob(odds2)
     return implied_prob(odds1) / total_implied_prob
+
+def convert_to_fv(implied_probs: list):
+    fv = []
+    for legs in implied_probs:
+        if legs["type"] == "odds":
+            fv.append(multiplicative_devig(legs["odds1"], legs["odds2"]))
+        elif legs["type"] == "probability":
+            fv.append(legs["value"])
+    return fv
+
+
+
 
 @app.get("/")
 def read_root():
