@@ -1,8 +1,8 @@
 # Render Configuration
 # This file helps Render understand how to deploy your FastAPI app
 
-# Root directory
-root_directory: src/backend
+# Root directory (backend files are now in root)
+root_directory: .
 
 # Build command
 build: pip install -r requirements.txt
