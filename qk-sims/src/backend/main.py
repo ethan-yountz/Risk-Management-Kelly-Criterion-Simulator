@@ -12,6 +12,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def implied_prob(odds: float):
+    if odds > 0:
+        return 100 / (odds + 100)
+    else:
+        odds = abs(odds)
+        return odds / (odds + 100)
+
+def multiplicative_devig(odds1: float, odds2: float):
+    total_implied_prob = implied_prob(odds1) + implied_prob(odds2)
+    return implied_prob(odds1) / total_implied_prob
+
+def prob_to_american_odds(prob):
+    if prob >= 0.5:
+        return -int((prob / (1 - prob)) * 100)
+    else:
+        return int(((1 - prob) / prob) * 100)
+
+def calculate_market_juice(original_prob, fair_prob):
+    return (original_prob - fair_prob) / original_prob * 100
+
 def seperate_odd_list(input_str: str):
     parts = [part.strip() for part in input_str.split(",")]
     return parts
@@ -45,38 +65,50 @@ def input_to_odds(input_str: str):
         parsed_legs.append(odds)
     return parsed_legs
 
-def implied_prob(odds: float):
-    if odds > 0:
-        return 100 / (odds + 100)
-    else:
-        odds = abs(odds)
-        return odds / (odds + 100)
-
-def convert_to_implied_prob(odds_list: dict):
-    implied_probs = []
-    for odds in odds_list:
-        if odds["type"] == "probability":
-            implied_probs.append(odds["value"] / 100)
-        elif odds["type"] == "odds":
-            prob1 = implied_prob(odds["odds1"])
-            prob2 = implied_prob(odds["odds2"])
-            implied_probs.extend([prob1, prob2])
-    return implied_probs
+def generate_leg_output(leg, leg_number):
+    """Generate output for a single leg with internal fair value calculation"""
+    if leg is None:
+        raise ValueError(f"Invalid leg data for leg {leg_number}")
     
-def multiplicative_devig(odds1: float, odds2: float):
-    total_implied_prob = implied_prob(odds1) + implied_prob(odds2)
-    return implied_prob(odds1) / total_implied_prob
+    if leg["type"] == "odds":
+        # Calculate fair value using multiplicative devig
+        fair_value = multiplicative_devig(leg["odds1"], leg["odds2"])
+        
+        # Calculate market juice
+        original_prob = implied_prob(leg["odds1"])
+        market_juice = calculate_market_juice(original_prob, fair_value)
+        
+        # Convert fair value to American odds
+        fair_odds = prob_to_american_odds(fair_value)
+        fair_percent = fair_value * 100
+        
+        return f"Leg#{leg_number} ({leg['odds1']}); Market Juice = {market_juice:.1f}%; Fair Value = {fair_odds:+} ({fair_percent:.1f}%)"
+    
+    else:  # probability type
+        # For probability input, fair value is just the input value
+        fair_value = leg["value"] / 100
+        fair_odds = prob_to_american_odds(fair_value)
+        fair_percent = fair_value * 100
+        
+        return f"Leg#{leg_number} ({leg['value']}%); Fair Value = {fair_odds:+} ({fair_percent:.1f}%)"
 
-def convert_to_fv(implied_probs: list):
-    fv = []
-    for legs in implied_probs:
-        if legs["type"] == "odds":
-            fv.append(multiplicative_devig(legs["odds1"], legs["odds2"]))
-        elif legs["type"] == "probability":
-            fv.append(legs["value"])
-    return fv
+def generate_complete_output(parsed_legs, final_odds, bankroll, kelly_fraction):
+    output = []
+    for i, leg in enumerate(parsed_legs):
+        leg_output = generate_leg_output(leg, i + 1)
+        output.append(leg_output)
+    
+    total_fv = 1
+    for i, leg in enumerate(parsed_legs):
+        if leg["type"] == "odds":
+            fair_value = multiplicative_devig(leg["odds1"], leg["odds2"])
+        else:
+            fair_value = leg["value"] / 100
+        total_fv *= fair_value
 
-
+    output.append(f"Final Odds: {final_odds}; Fair Value = {prob_to_american_odds(total_fv)} ({total_fv * 100:.1f}%)")
+    output.append(f"Summary: EV% {100 - (implied_prob(final_odds) / total_fv) * 100:.1f}%, Kelly Wager = {bankroll * kelly_fraction:.2f}")
+    return output
 
 
 @app.get("/")
@@ -95,6 +127,16 @@ def parse_odds(odds_str: str):
     
     result["input"] = odds_str
     return result
+
+@app.get("/calculate-bet")
+def calculate_bet(input_str: str, final_odds: int, bankroll: float, kelly_fraction: float):
+    """Calculate the complete betting analysis"""
+    try:
+        parsed_legs = input_to_odds(input_str)
+        output = generate_complete_output(parsed_legs, final_odds, bankroll, kelly_fraction)
+        return {"output": output, "parsed_legs": parsed_legs}
+    except Exception as e:
+        return {"error": str(e), "input": input_str}
 
 
 if __name__ == "__main__":
