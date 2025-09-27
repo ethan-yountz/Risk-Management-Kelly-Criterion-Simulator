@@ -1,6 +1,4 @@
-# Frontend files (exclude from backend deployment)
-src/app/
-src/lib/
+# Node.js
 node_modules/
 .next/
 *.log
