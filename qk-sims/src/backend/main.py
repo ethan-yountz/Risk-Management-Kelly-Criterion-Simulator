@@ -24,13 +24,44 @@ def multiplicative_devig(odds1: float, odds2: float):
     return implied_prob(odds1) / total_implied_prob
 
 def prob_to_american_odds(prob):
-    if prob >= 0.5:
+    if prob > 0.5:
         return -int((prob / (1 - prob)) * 100)
     else:
         return int(((1 - prob) / prob) * 100)
 
 def calculate_market_juice(original_prob, fair_prob):
     return (original_prob - fair_prob) / original_prob * 100
+
+def calculate_kelly_wager(fair_prob, payout_odds, bankroll, kelly_fraction):
+    """Calculate Kelly wager based on fair probability and payout odds"""
+    payout_prob = implied_prob(payout_odds)
+    
+    # Calculate edge (EV%)
+    edge = (fair_prob - payout_prob) / payout_prob * 100
+    
+    # Kelly formula: f = (bp - q) / b
+    # where b = payout odds (as decimal), p = win probability, q = loss probability
+    if payout_odds > 0:
+        b = payout_odds / 100  
+    else:
+        b = 100 / abs(payout_odds)  
+    
+    p = fair_prob
+    q = 1 - fair_prob
+    
+    kelly_percentage = (b * p - q) / b
+    
+    # Apply Kelly fraction and bankroll
+    kelly_wager = bankroll * kelly_fraction * kelly_percentage
+    
+    return {
+        "edge_percent": edge,
+        "kelly_percentage": kelly_percentage * 100,
+        "kelly_wager": kelly_wager,
+        "full_kelly": 100 * kelly_percentage,
+        "half_kelly": 100 * kelly_percentage / 2,
+        "quarter_kelly": 100 * kelly_percentage / 4
+    }
 
 def seperate_odd_list(input_str: str):
     parts = [part.strip() for part in input_str.split(",")]
@@ -106,8 +137,11 @@ def generate_complete_output(parsed_legs, final_odds, bankroll, kelly_fraction):
             fair_value = leg["value"] / 100
         total_fv *= fair_value
 
+    # Calculate Kelly wager using the helper function
+    kelly_data = calculate_kelly_wager(total_fv, final_odds, bankroll, kelly_fraction)
+    
     output.append(f"Final Odds: {final_odds}; Fair Value = {prob_to_american_odds(total_fv)} ({total_fv * 100:.1f}%)")
-    output.append(f"Summary: EV% {100 - (implied_prob(final_odds) / total_fv) * 100:.1f}%, Kelly Wager = {bankroll * kelly_fraction:.2f}")
+    output.append(f"Summary: EV% = {kelly_data['edge_percent']:.1f}%, Kelly Wager = ${kelly_data['kelly_wager']:.2f} (Full={kelly_data['full_kelly']:.2f}u, 1/2={kelly_data['half_kelly']:.2f}u, 1/4={kelly_data['quarter_kelly']:.2f}u)")
     return output
 
 

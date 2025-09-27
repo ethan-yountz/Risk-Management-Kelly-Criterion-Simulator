@@ -5,13 +5,16 @@ import { useState } from "react";
 export default function Home() {
   const [result, setResult] = useState<string>("");
   const [inputString, setInputString] = useState<string>("-113/-113, -113/-113");
+  const [bankroll, setBankroll] = useState<string>("100");
+  const [kellyFraction, setKellyFraction] = useState<string>("0.25");
+  const [finalOdds, setFinalOdds] = useState<string>("324");
   
   // Temporary URL - change this to your Render URL when deployed
   const API_URL = "http://localhost:8000";
 
   const handleClick = async () => {
     try {
-      const response = await fetch(`${API_URL}/calculate-bet?input_str=${encodeURIComponent(inputString)}&final_odds=324&bankroll=100&kelly_fraction=0.25`);
+      const response = await fetch(`${API_URL}/calculate-bet?input_str=${encodeURIComponent(inputString)}&final_odds=${finalOdds}&bankroll=${bankroll}&kelly_fraction=${kellyFraction}`);
       const data = await response.json();
       
       if (data.output) {
@@ -27,13 +30,13 @@ export default function Home() {
   };
   
   return (
-    <div>
+    <div style={{ padding: "20px", maxWidth: "600px", margin: "0 auto" }}>
       <header>
         <h1>Betting Calculator</h1>
       </header>
       
       <div style={{ margin: "20px 0" }}>
-        <label htmlFor="odds-input" style={{ display: "block", marginBottom: "10px" }}>
+        <label htmlFor="odds-input" style={{ display: "block", marginBottom: "10px", fontWeight: "bold" }}>
           Enter odds (comma-separated):
         </label>
         <input
@@ -43,7 +46,67 @@ export default function Home() {
           onChange={(e) => setInputString(e.target.value)}
           placeholder="-113/-113, -113/-113"
           style={{
-            width: "300px",
+            width: "100%",
+            padding: "8px",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            fontSize: "14px"
+          }}
+        />
+      </div>
+
+      <div style={{ margin: "20px 0" }}>
+        <label htmlFor="final-odds" style={{ display: "block", marginBottom: "10px", fontWeight: "bold" }}>
+          Final Odds:
+        </label>
+        <input
+          id="final-odds"
+          type="text"
+          value={finalOdds}
+          onChange={(e) => setFinalOdds(e.target.value)}
+          placeholder="324"
+          style={{
+            width: "100%",
+            padding: "8px",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            fontSize: "14px"
+          }}
+        />
+      </div>
+
+      <div style={{ margin: "20px 0" }}>
+        <label htmlFor="bankroll" style={{ display: "block", marginBottom: "10px", fontWeight: "bold" }}>
+          Bankroll ($):
+        </label>
+        <input
+          id="bankroll"
+          type="text"
+          value={bankroll}
+          onChange={(e) => setBankroll(e.target.value)}
+          placeholder="100"
+          style={{
+            width: "100%",
+            padding: "8px",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            fontSize: "14px"
+          }}
+        />
+      </div>
+
+      <div style={{ margin: "20px 0" }}>
+        <label htmlFor="kelly-fraction" style={{ display: "block", marginBottom: "10px", fontWeight: "bold" }}>
+          Kelly Fraction:
+        </label>
+        <input
+          id="kelly-fraction"
+          type="text"
+          value={kellyFraction}
+          onChange={(e) => setKellyFraction(e.target.value)}
+          placeholder="0.25"
+          style={{
+            width: "100%",
             padding: "8px",
             border: "1px solid #ccc",
             borderRadius: "4px",
@@ -52,7 +115,7 @@ export default function Home() {
         />
       </div>
       
-      <button onClick={handleClick} className="runbutton"> 
+      <button onClick={handleClick} className="runbutton" style={{ width: "100%", padding: "12px", fontSize: "16px" }}> 
         Calculate Bet
       </button>
       
