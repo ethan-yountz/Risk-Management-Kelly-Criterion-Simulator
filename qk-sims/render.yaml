@@ -5,7 +5,7 @@
 root_directory: .
 
 # Build command
-poetry install --no-root
+build: poetry install --no-root
 
 
 # Start command  
