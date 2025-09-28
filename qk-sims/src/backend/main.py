@@ -8,8 +8,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",  # Local development
-        "https://*.vercel.app",   # Vercel deployments
-        "https://risk-management-kelly-criterion-sim.vercel.app"  # Your specific Vercel URL
+        "https://*.vercel.app"    # All Vercel deployments
     ],
     allow_credentials=True,
     allow_methods=["*"],
