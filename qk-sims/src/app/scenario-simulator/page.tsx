@@ -215,7 +215,6 @@ export default function ScenarioSimulator() {
           {/* Mode A Inputs */}
           {mode === "A" && (
             <div style={{ marginBottom: "15px", padding: "12px", border: "1px solid #ddd", borderRadius: "8px" }}>
-              <h2 style={{ marginBottom: "12px" }}>Mode A: Fair Probability Settings</h2>
               
               <div style={{ marginBottom: "12px" }}>
                 <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
@@ -286,7 +285,6 @@ export default function ScenarioSimulator() {
           {/* Mode B Inputs */}
           {mode === "B" && (
             <div style={{ marginBottom: "15px", padding: "12px", border: "1px solid #ddd", borderRadius: "8px" }}>
-              <h2 style={{ marginBottom: "12px" }}>Mode B: Edge Settings</h2>
               
               <div style={{ marginBottom: "12px" }}>
                 <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
