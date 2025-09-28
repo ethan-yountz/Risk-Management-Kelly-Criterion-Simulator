@@ -364,8 +364,8 @@ def run_monte_carlo_simulation(request: MonteCarloRequest) -> SimulationResults:
                     kelly_percentage = edge / implied_prob_value if implied_prob_value > 0 else 0
                     wager = request.starting_bankroll * request.kelly_fraction * kelly_percentage
                 else:
-                    # Negative edge: flat bet 1 unit
-                    wager = 1.0
+                    # Negative edge: flat bet 1% of bankroll
+                    wager = request.starting_bankroll * 0.01
                 
                 # All legs must win for the parlay to win
                 parlay_wins_current_bet = True
@@ -401,8 +401,8 @@ def run_monte_carlo_simulation(request: MonteCarloRequest) -> SimulationResults:
                     # Cap Kelly wager at 10% of starting bankroll to prevent unrealistic scenarios
                     wager = min(wager, request.starting_bankroll * 0.10)
                 else:
-                    # Negative edge: flat bet 1 unit
-                    wager = 1.0
+                    # Negative edge: flat bet 1% of bankroll
+                    wager = request.starting_bankroll * 0.01
                 
                 if random.random() < fair_prob:
                     current_bankroll += wager * (payout_odds / 100)
@@ -449,7 +449,6 @@ def run_monte_carlo_simulation(request: MonteCarloRequest) -> SimulationResults:
 
 @app.post("/monte-carlo-simulation")
 def monte_carlo_simulation(request: MonteCarloRequest):
-    """Run Monte Carlo simulation for betting strategy analysis"""
     try:
         results = run_monte_carlo_simulation(request)
         return {"results": results}
