@@ -14,7 +14,6 @@ export default function Home() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   const handleClick = async () => {
-    console.log('API_URL:', API_URL); // Debug log
     try {
       const response = await fetch(`${API_URL}/calculate-bet?input_str=${encodeURIComponent(inputString)}&final_odds=${finalOdds}&bankroll=${bankroll}&kelly_fraction=${kellyFraction}&devig_method=${devigMethod}`);
       const data = await response.json();
