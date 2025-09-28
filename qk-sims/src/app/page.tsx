@@ -19,7 +19,7 @@ export default function Home() {
       const data = await response.json();
       
       if (data.output) {
-        const sanitizedOutput = data.output.map(line => line.replace(/<[^>]*>/g, ''));
+        const sanitizedOutput = data.output.map((line: string) => line.replace(/<[^>]*>/g, ''));
         setResult(sanitizedOutput);
       } else if (data.error) {
         const sanitizedError = data.error.replace(/<[^>]*>/g, '');
