@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Betting Calculator
 
-## Getting Started
+**Live at:** https://risk-management-kelly-criterion-sim.vercel.app/
 
-First, run the development server:
+A comprehensive betting analysis tool featuring Quarter Kelly Criterion calculations and Monte Carlo simulations for betting strategy evaluation.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Pages
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### QK Calculator
+The Quarter Kelly & Devig Calculator analyzes betting opportunities using various devigging methods to determine fair value and optimal Kelly wager sizes. Features include:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Odds Parsing**: Handles both single probabilities (e.g., "60.5") and odds pairs (e.g., "-113/-113")
+- **Devig Methods**: Multiplicative, Additive, Power, and Worst Case devigging
+- **Kelly Criterion**: Calculates optimal wager sizes with customizable Kelly fractions
+- **Market Analysis**: Shows market juice, fair value, and expected value percentages
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Scenario Simulator
+The Monte Carlo Simulator runs thousands of betting simulations to analyze strategy performance over time. Features include:
 
-## Learn More
+- **Two Simulation Modes**:
+  - **Mode A**: Fair probability + payout odds (parlay betting)
+  - **Mode B**: Estimated edge % + payout odds (individual betting)
+- **Comprehensive Statistics**: Probability of profit, mean/median bankroll, risk of ruin
+- **Confidence Intervals**: Shows best/worst case scenarios (1%, 5%, 10%, 90%, 95%, 99%)
+- **Realistic Modeling**: Uses fixed Kelly wagers and handles negative EV scenarios
 
-To learn more about Next.js, take a look at the following resources:
+## Technology Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Frontend**: Next.js 15, React, TypeScript, Tailwind CSS
+- **Backend**: FastAPI, Python, NumPy
+- **Deployment**: Vercel (frontend), Render (backend)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Features
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Real-time Calculations**: Instant results for betting analysis
+- **Monte Carlo Simulations**: 10,000 simulations with 100 bets each
+- **Responsive Design**: Works on desktop and mobile devices
+- **CORS-enabled API**: Seamless frontend-backend communication
