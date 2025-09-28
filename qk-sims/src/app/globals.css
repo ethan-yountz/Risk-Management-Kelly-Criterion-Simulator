@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #1a1a1a;
+  --foreground: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -50,22 +50,22 @@ h3 {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #333;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: #666;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #888;
 }
 
 /* Focus styles */
 input:focus, select:focus, textarea:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 
 /* Button hover effects */
@@ -75,7 +75,7 @@ button {
 
 /* Card shadows */
 .shadow-sm {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px 0 rgba(255, 255, 255, 0.1);
 }
 
 /* Responsive design is handled by Tailwind CSS automatically */

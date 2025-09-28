@@ -105,21 +105,21 @@ export default function ScenarioSimulator() {
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
+    <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto", backgroundColor: "#1a1a1a", color: "white", minHeight: "100vh" }}>
       <header>
-        <h1>Scenario Simulator</h1>
-        <p style={{ color: "#666", marginTop: "8px" }}>
+        <h1 style={{ color: "white" }}>Scenario Simulator</h1>
+        <p style={{ color: "#ccc", marginTop: "8px" }}>
           Monte Carlo Simulations for Betting Strategies
         </p>
       </header>
 
       <div style={{ display: "flex", gap: "30px", marginTop: "20px" }}>
         <div style={{ flex: "1.3", minWidth: "600px" }}>
-          <div style={{ marginBottom: "15px", padding: "12px", border: "1px solid #ddd", borderRadius: "8px" }}>
-            <h2 style={{ marginBottom: "12px" }}>Simulation Settings</h2>
+          <div style={{ marginBottom: "15px", padding: "12px", border: "1px solid #444", borderRadius: "8px", backgroundColor: "#2a2a2a" }}>
+            <h2 style={{ marginBottom: "12px", color: "white" }}>Simulation Settings</h2>
             
             <div style={{ marginBottom: "12px" }}>
-              <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", color: "white" }}>
                 Starting Bankroll ($):
               </label>
               <input
@@ -129,17 +129,17 @@ export default function ScenarioSimulator() {
                 style={{
                   width: "100%",
                   padding: "8px",
-                  border: "1px solid #ccc",
+                  border: "1px solid #555",
                   borderRadius: "4px",
                   fontSize: "14px",
-                  color: "#000",
-                  backgroundColor: "#fff"
+                  color: "white",
+                  backgroundColor: "black"
                 }}
               />
             </div>
 
             <div style={{ marginBottom: "12px" }}>
-              <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", color: "white" }}>
                 Kelly Fraction:
               </label>
               <input
@@ -152,17 +152,17 @@ export default function ScenarioSimulator() {
                 style={{
                   width: "100%",
                   padding: "8px",
-                  border: "1px solid #ccc",
+                  border: "1px solid #555",
                   borderRadius: "4px",
                   fontSize: "14px",
-                  color: "#000",
-                  backgroundColor: "#fff"
+                  color: "white",
+                  backgroundColor: "black"
                 }}
               />
             </div>
 
             <div style={{ marginBottom: "12px" }}>
-              <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", color: "white" }}>
                 Sample Size (Number of Bets):
               </label>
               <input
@@ -173,11 +173,11 @@ export default function ScenarioSimulator() {
                 style={{
                   width: "100%",
                   padding: "8px",
-                  border: "1px solid #ccc",
+                  border: "1px solid #555",
                   borderRadius: "4px",
                   fontSize: "14px",
-                  color: "#000",
-                  backgroundColor: "#fff"
+                  color: "white",
+                  backgroundColor: "black"
                 }}
               />
             </div>
@@ -185,9 +185,9 @@ export default function ScenarioSimulator() {
 
           {/* Mode Selection */}
           <div style={{ marginBottom: "15px", padding: "12px", border: "1px solid #ddd", borderRadius: "8px" }}>
-            <h2 style={{ marginBottom: "12px" }}>Mode Selection</h2>
+              <h2 style={{ marginBottom: "12px", color: "white" }}>Mode Selection</h2>
             <div style={{ display: "flex", gap: "20px" }}>
-              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+              <label style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "white" }}>
                 <input
                   type="radio"
                   name="mode"
@@ -198,7 +198,7 @@ export default function ScenarioSimulator() {
                 />
                 <span>Mode A: Fair Probability</span>
               </label>
-              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+              <label style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "white" }}>
                 <input
                   type="radio"
                   name="mode"
@@ -214,10 +214,10 @@ export default function ScenarioSimulator() {
 
           {/* Mode A Inputs */}
           {mode === "A" && (
-            <div style={{ marginBottom: "15px", padding: "12px", border: "1px solid #ddd", borderRadius: "8px" }}>
+            <div style={{ marginBottom: "15px", padding: "12px", border: "1px solid #444", borderRadius: "8px", backgroundColor: "#2a2a2a" }}>
               
               <div style={{ marginBottom: "12px" }}>
-                <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
+                <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", color: "white" }}>
                   Fair Prob of One Leg (%):
                 </label>
                 <input
@@ -240,7 +240,7 @@ export default function ScenarioSimulator() {
               </div>
 
               <div style={{ marginBottom: "12px" }}>
-                <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
+                <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", color: "white" }}>
                   Total Payout:
                 </label>
                 <input
@@ -260,7 +260,7 @@ export default function ScenarioSimulator() {
               </div>
 
               <div style={{ marginBottom: "12px" }}>
-                <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
+                <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", color: "white" }}>
                   Number of Legs:
                 </label>
                 <input
@@ -284,10 +284,9 @@ export default function ScenarioSimulator() {
 
           {/* Mode B Inputs */}
           {mode === "B" && (
-            <div style={{ marginBottom: "15px", padding: "12px", border: "1px solid #ddd", borderRadius: "8px" }}>
-              
+            <div style={{ marginBottom: "15px", padding: "12px", border: "1px solid #444", borderRadius: "8px", backgroundColor: "#2a2a2a" }}>              
               <div style={{ marginBottom: "12px" }}>
-                <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
+                <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", color: "white" }}>
                   Estimated Edge (%):
                 </label>
                 <input
@@ -308,7 +307,7 @@ export default function ScenarioSimulator() {
               </div>
 
               <div style={{ marginBottom: "12px" }}>
-                <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
+                <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold", color: "white" }}>
                   Payout Per Bet:
                 </label>
                 <input
