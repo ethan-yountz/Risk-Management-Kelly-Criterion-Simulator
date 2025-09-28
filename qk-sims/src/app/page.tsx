@@ -3,7 +3,7 @@ import "./globals.css";
 import { useState } from "react";
 
 export default function Home() {
-  const [result, setResult] = useState<string>("");
+  const [result, setResult] = useState<string[]>([]);
   const [inputString, setInputString] = useState<string>("-113/-113, -113/-113");
   const [bankroll, setBankroll] = useState<string>("100");
   const [kellyFraction, setKellyFraction] = useState<string>("0.25");
@@ -19,46 +19,52 @@ export default function Home() {
       const data = await response.json();
       
       if (data.output) {
-        const sanitizedOutput = data.output.join('\n').replace(/<[^>]*>/g, '');
-        alert(sanitizedOutput);
+        const sanitizedOutput = data.output.map(line => line.replace(/<[^>]*>/g, ''));
+        setResult(sanitizedOutput);
       } else if (data.error) {
         const sanitizedError = data.error.replace(/<[^>]*>/g, '');
-        alert(`Error: ${sanitizedError}`);
+        setResult([`Error: ${sanitizedError}`]);
       } else {
-        alert("No output received");
+        setResult(["No output received"]);
       }
     } catch (error) {
-      alert("Error: Could not connect to API");
+      setResult(["Error: Could not connect to API"]);
     }
   };
   
       return (
-        <div style={{ padding: "20px", maxWidth: "600px", margin: "0 auto" }}>
+        <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
           <header>
             <h1>QK Calculator</h1>
             <p style={{ color: "#666", marginTop: "8px" }}>
               Quarter Kelly & Devig Calculator
             </p>
           </header>
+          
+          <div style={{ display: "flex", gap: "40px", marginTop: "20px" }}>
+            {/* Left Column - Inputs */}
+            <div style={{ flex: "1", minWidth: "400px" }}>
       
       <div style={{ margin: "20px 0" }}>
         <label htmlFor="odds-input" style={{ display: "block", marginBottom: "10px", fontWeight: "bold" }}>
           Enter odds (comma-separated):
         </label>
-        <input
-          id="odds-input"
-          type="text"
-          value={inputString}
-          onChange={(e) => setInputString(e.target.value)}
-          placeholder="-113/-113, -113/-113"
-          style={{
-            width: "100%",
-            padding: "8px",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            fontSize: "14px"
-          }}
-        />
+            <input
+              id="odds-input"
+              type="text"
+              value={inputString}
+              onChange={(e) => setInputString(e.target.value)}
+              placeholder="-113/-113, -113/-113"
+              style={{
+                width: "100%",
+                padding: "8px",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                fontSize: "14px",
+                color: "#000",
+                backgroundColor: "#fff"
+              }}
+            />
       </div>
 
       <div style={{ margin: "20px 0" }}>
@@ -76,7 +82,9 @@ export default function Home() {
             padding: "8px",
             border: "1px solid #ccc",
             borderRadius: "4px",
-            fontSize: "14px"
+            fontSize: "14px",
+            color: "#000",
+            backgroundColor: "#fff"
           }}
         />
       </div>
@@ -96,7 +104,9 @@ export default function Home() {
             padding: "8px",
             border: "1px solid #ccc",
             borderRadius: "4px",
-            fontSize: "14px"
+            fontSize: "14px",
+            color: "#000",
+            backgroundColor: "#fff"
           }}
         />
       </div>
@@ -116,7 +126,9 @@ export default function Home() {
             padding: "8px",
             border: "1px solid #ccc",
             borderRadius: "4px",
-            fontSize: "14px"
+            fontSize: "14px",
+            color: "#000",
+            backgroundColor: "#fff"
           }}
         />
       </div>
@@ -146,11 +158,37 @@ export default function Home() {
             </select>
       </div>
       
-      <button onClick={handleClick} className="runbutton" style={{ width: "100%", padding: "12px", fontSize: "16px" }}> 
-        Calculate Bet
-      </button>
-      
-      {result && <p>{result}</p>}
-    </div>
+              <button onClick={handleClick} className="runbutton" style={{ width: "100%", padding: "12px", fontSize: "16px" }}> 
+                Calculate Bet
+              </button>
+            </div>
+            
+            {/* Right Column - Results */}
+            <div style={{ flex: "1", minWidth: "400px" }}>
+              <h2 style={{ marginBottom: "20px" }}>Results</h2>
+              <div style={{
+                backgroundColor: "#f8f9fa",
+                padding: "20px",
+                borderRadius: "8px",
+                border: "1px solid #e9ecef",
+                minHeight: "200px"
+              }}>
+                {result.length > 0 ? (
+                  <div style={{ fontFamily: "monospace", fontSize: "14px", lineHeight: "1.6", color: "#000" }}>
+                    {result.map((line, index) => (
+                      <div key={index} style={{ marginBottom: "8px" }}>
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: "#666", fontStyle: "italic" }}>
+                    Click "Calculate Bet" to see results here
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
   );
 }

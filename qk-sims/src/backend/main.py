@@ -228,6 +228,8 @@ def generate_complete_output(parsed_legs, final_odds, bankroll, kelly_fraction, 
         output.append(leg_output)
     
     total_fv = 1
+    worst_case_methods = []  # Track methods used for each leg in worst case
+    
     for i, leg in enumerate(parsed_legs):
         if leg["type"] == "odds":
             # Use the selected devig method
@@ -238,12 +240,20 @@ def generate_complete_output(parsed_legs, final_odds, bankroll, kelly_fraction, 
             elif devig_method == "power":
                 fair_value = power_devig(leg["odds1"], leg["odds2"])
             elif devig_method == "worst_case":
-                fair_value, actual_method_used = worst_case_devig(leg["odds1"], leg["odds2"])
+                fair_value, method_used = worst_case_devig(leg["odds1"], leg["odds2"])
+                worst_case_methods.append(method_used)
             else:  # default fallback
                 fair_value = multiplicative_devig(leg["odds1"], leg["odds2"])
         else:
             fair_value = leg["value"] / 100
         total_fv *= fair_value
+    
+    # For worst case, determine the overall method used
+    if devig_method == "worst_case" and worst_case_methods:
+        # Use the most common method, or the first one if tied
+        from collections import Counter
+        method_counts = Counter(worst_case_methods)
+        actual_method_used = method_counts.most_common(1)[0][0]
 
     # Calculate Kelly wager using the helper function
     kelly_data = calculate_kelly_wager(total_fv, final_odds, bankroll, kelly_fraction)
