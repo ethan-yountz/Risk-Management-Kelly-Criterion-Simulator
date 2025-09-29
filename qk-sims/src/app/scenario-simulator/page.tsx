@@ -1,6 +1,39 @@
 "use client";
 import "../globals.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import dynamic from 'next/dynamic';
+
+const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), {
+  ssr: false,
+  loading: () => <div style={{ color: "white", textAlign: "center", padding: "20px" }}>Loading chart...</div>
+});
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js';
+import zoomPlugin from 'chartjs-plugin-zoom';
+
+if (typeof window !== 'undefined') {
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler,
+    zoomPlugin
+  );
+}
 
 interface Leg {
   id: number;
@@ -23,6 +56,7 @@ interface SimulationResults {
     top1: number;
   };
   simulations: number[];
+  simulationProgressions: number[][];
 }
 
 export default function ScenarioSimulator() {
@@ -43,8 +77,62 @@ export default function ScenarioSimulator() {
   const [payoutPerBet, setPayoutPerBet] = useState<string>("100");
   const [results, setResults] = useState<SimulationResults | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [graphSelection, setGraphSelection] = useState<"median" | "top5" | "bottom5">("median");
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+  const generateChartData = () => {
+    if (!results || !results.simulationProgressions) return null;
+
+    const actualDataLength = results.simulationProgressions[0]?.length || 0;
+    const labels = Array.from({ length: actualDataLength }, (_, i) => i);
+
+    let selectedData: number[] = [];
+    let label = "";
+
+    if (graphSelection === "median") {
+      const sortedSimulations = [...results.simulations].sort((a, b) => a - b);
+      const medianValue = sortedSimulations[Math.floor(sortedSimulations.length / 2)];
+      const medianIndex = results.simulations.findIndex(sim => sim === medianValue);
+      selectedData = results.simulationProgressions[medianIndex];
+      label = "Median Run";
+    } else if (graphSelection === "top5") {
+      const sortedSimulations = [...results.simulations].sort((a, b) => b - a);
+      const top5Value = sortedSimulations[Math.floor(sortedSimulations.length * 0.05)];
+      const top5Index = results.simulations.findIndex(sim => sim === top5Value);
+      selectedData = results.simulationProgressions[top5Index];
+      label = "Top 5% Run";
+    } else if (graphSelection === "bottom5") {
+      const sortedSimulations = [...results.simulations].sort((a, b) => a - b);
+      const bottom5Value = sortedSimulations[Math.floor(sortedSimulations.length * 0.05)];
+      const bottom5Index = results.simulations.findIndex(sim => sim === bottom5Value);
+      selectedData = results.simulationProgressions[bottom5Index];
+      label = "Bottom 5% Run";
+    }
+
+    return {
+      labels,
+      datasets: [
+        {
+          label,
+          data: selectedData,
+          borderColor: graphSelection === "median" ? "#3b82f6" : 
+                      graphSelection === "top5" ? "#10b981" : "#ef4444",
+          backgroundColor: graphSelection === "median" ? "rgba(59, 130, 246, 0.1)" : 
+                           graphSelection === "top5" ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
+          fill: true,
+          tension: 0.1,
+          pointRadius: 2,
+          pointHoverRadius: 6,
+        },
+      ],
+    };
+  };
 
   const addLeg = () => {
     const newId = Math.max(...legs.map(l => l.id), 0) + 1;
@@ -365,18 +453,171 @@ export default function ScenarioSimulator() {
 
 
               <div>
-                <h3 style={{ marginBottom: "15px" }}>Distribution Graph</h3>
+                <h3 style={{ marginBottom: "15px", color: "black" }}>Interactive Simulation Graph</h3>
+                
+                <div style={{ marginBottom: "15px", display: "flex", gap: "10px" }}>
+                  <label style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "black" }}>
+                    <input
+                      type="radio"
+                      name="graphSelection"
+                      value="median"
+                      checked={graphSelection === "median"}
+                      onChange={(e) => setGraphSelection(e.target.value as "median" | "top5" | "bottom5")}
+                      style={{ marginRight: "8px" }}
+                    />
+                    <span>Median Run</span>
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "black" }}>
+                    <input
+                      type="radio"
+                      name="graphSelection"
+                      value="top5"
+                      checked={graphSelection === "top5"}
+                      onChange={(e) => setGraphSelection(e.target.value as "median" | "top5" | "bottom5")}
+                      style={{ marginRight: "8px" }}
+                    />
+                    <span>Top 5% Run</span>
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "black" }}>
+                    <input
+                      type="radio"
+                      name="graphSelection"
+                      value="bottom5"
+                      checked={graphSelection === "bottom5"}
+                      onChange={(e) => setGraphSelection(e.target.value as "median" | "top5" | "bottom5")}
+                      style={{ marginRight: "8px" }}
+                    />
+                    <span>Bottom 5% Run</span>
+                  </label>
+                </div>
+
                 <div style={{ 
-                  height: "200px", 
-                  backgroundColor: "#fff", 
-                  border: "1px solid #ddd", 
-                  borderRadius: "4px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#666"
+                  height: "400px", 
+                  backgroundColor: "#1a1a1a", 
+                  border: "1px solid #444", 
+                  borderRadius: "8px",
+                  padding: "20px"
                 }}>
-                  Interactive Graph Coming Soon
+                  {isClient && generateChartData() && (
+                    <Line
+                      data={generateChartData()!}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          title: {
+                            display: true,
+                            text: `Bankroll Progression - ${graphSelection === "median" ? "Median" : graphSelection === "top5" ? "Top 5%" : "Bottom 5%"} Run`,
+                            color: "white",
+                            font: {
+                              size: 16
+                            }
+                          },
+                          legend: {
+                            display: true,
+                            labels: {
+                              color: "white"
+                            }
+                          },
+                          tooltip: {
+                            backgroundColor: "rgba(0, 0, 0, 0.8)",
+                            titleColor: "white",
+                            bodyColor: "white",
+                            borderColor: "#444",
+                            borderWidth: 1,
+                            callbacks: {
+                              title: function(context) {
+                                if (!context || !context[0] || context[0].label === undefined) {
+                                  return '';
+                                }
+                                const betNumber = parseInt(context[0].label);
+                                return `Bet ${betNumber}`;
+                              },
+                              label: function(context) {
+                                if (!context || !context.parsed || context.parsed.y === undefined) {
+                                  return '';
+                                }
+                                return `Bankroll: $${Math.round(context.parsed.y)}`;
+                              }
+                            }
+                          },
+                          zoom: {
+                            limits: {
+                              x: { min: 0, max: results?.simulationProgressions?.[0]?.length - 1 || 0 },
+                              y: { min: 'original', max: 'original' }
+                            },
+                            zoom: {
+                              wheel: {
+                                enabled: true,
+                              },
+                              pinch: {
+                                enabled: true
+                              },
+                              mode: 'xy',
+                            },
+                            pan: {
+                              enabled: true,
+                              mode: 'xy',
+                              limits: {
+                                x: { min: 0, max: results?.simulationProgressions?.[0]?.length - 1 || 0 },
+                                y: { min: 'original', max: 'original' }
+                              }
+                            }
+                          }
+                        },
+                        scales: {
+                          x: {
+                            title: {
+                              display: true,
+                              text: "Number of Bets",
+                              color: "white"
+                            },
+                            ticks: {
+                              color: "white",
+                              stepSize: 1,
+                              callback: function(value) {
+                                return Number.isInteger(value) ? value : null;
+                              }
+                            },
+                            grid: {
+                              color: "#444"
+                            }
+                          },
+                          y: {
+                            title: {
+                              display: true,
+                              text: "Bankroll Value ($)",
+                              color: "white"
+                            },
+                            ticks: {
+                              color: "white",
+                              stepSize: 1,
+                              callback: function(value) {
+                                return Number.isInteger(value) ? `$${value}` : null;
+                              }
+                            },
+                            grid: {
+                              color: "#444"
+                            }
+                          }
+                        },
+                        interaction: {
+                          intersect: false,
+                          mode: 'index'
+                        },
+                        elements: {
+                          point: {
+                            hoverBackgroundColor: "white"
+                          }
+                        }
+                      }}
+                    />
+                  )}
+                  {!isClient && (
+                    <div style={{ color: "white", textAlign: "center", padding: "20px" }}>
+                      Loading chart...
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

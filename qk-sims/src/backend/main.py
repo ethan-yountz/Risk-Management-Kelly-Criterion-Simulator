@@ -322,6 +322,7 @@ class SimulationResults(BaseModel):
     riskOfRuin: float
     confidenceIntervals: dict
     simulations: List[float]
+    simulationProgressions: List[List[float]]  # Bankroll progression for each simulation
     individualLegRecords: Optional[dict] = None
     parlayRecords: Optional[dict] = None
 
@@ -329,6 +330,7 @@ def run_monte_carlo_simulation(request: MonteCarloRequest) -> SimulationResults:
     final_bankrolls = []
     individual_leg_wins = {}
     parlay_wins = []
+    simulation_progressions = []  # Track bankroll progression for each simulation
     
     # Set random seed for reproducibility
     random.seed(42)
@@ -337,6 +339,7 @@ def run_monte_carlo_simulation(request: MonteCarloRequest) -> SimulationResults:
     for sim in range(request.num_simulations):
         current_bankroll = request.starting_bankroll
         leg_wins = {}
+        bankroll_progression = [current_bankroll]  # Track bankroll at each bet
         if request.mode == "B" and request.legs:
             leg_wins = {leg.id: 0 for leg in request.legs}
         parlay_wins_sim = 0
@@ -382,6 +385,9 @@ def run_monte_carlo_simulation(request: MonteCarloRequest) -> SimulationResults:
                     parlay_wins_sim += 1
                 else:
                     current_bankroll -= wager
+                
+                # Track bankroll progression after each bet
+                bankroll_progression.append(current_bankroll)
                     
             elif request.mode == "B":
                 # Mode B: Edge % + payout per bet
@@ -408,9 +414,13 @@ def run_monte_carlo_simulation(request: MonteCarloRequest) -> SimulationResults:
                     current_bankroll += wager * (payout_odds / 100)
                 else:
                     current_bankroll -= wager
+                
+                # Track bankroll progression after each bet
+                bankroll_progression.append(current_bankroll)
         
         final_bankrolls.append(current_bankroll)
         parlay_wins.append(parlay_wins_sim)
+        simulation_progressions.append(bankroll_progression)
     
     # Calculate statistics
     final_bankrolls = np.array(final_bankrolls)
@@ -443,6 +453,7 @@ def run_monte_carlo_simulation(request: MonteCarloRequest) -> SimulationResults:
         riskOfRuin=float(risk_of_ruin),
         confidenceIntervals=confidence_intervals,
         simulations=final_bankrolls.tolist(),
+        simulationProgressions=simulation_progressions,
         individualLegRecords=None,
         parlayRecords=betting_records
     )
