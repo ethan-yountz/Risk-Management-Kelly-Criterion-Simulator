@@ -557,11 +557,7 @@ export default function ScenarioSimulator() {
                             },
                             pan: {
                               enabled: true,
-                              mode: 'xy',
-                              limits: {
-                                x: { min: 0, max: results?.simulationProgressions?.[0]?.length - 1 || 0 },
-                                y: { min: 'original', max: 'original' }
-                              }
+                              mode: 'xy'
                             }
                           }
                         },
