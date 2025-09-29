@@ -8,19 +8,6 @@ const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), {
   loading: () => <div style={{ color: "white", textAlign: "center", padding: "20px" }}>Loading chart...</div>
 });
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js';
-import zoomPlugin from 'chartjs-plugin-zoom';
-
 interface Leg {
   id: number;
   fairProbability?: number;
@@ -69,17 +56,31 @@ export default function ScenarioSimulator() {
   useEffect(() => {
     setIsClient(true);
     if (typeof window !== 'undefined') {
-      ChartJS.register(
-        CategoryScale,
-        LinearScale,
-        PointElement,
-        LineElement,
-        Title,
-        Tooltip,
-        Legend,
-        Filler,
-        zoomPlugin
-      );
+      const initializeChart = async () => {
+        const [
+          { Chart: ChartJS },
+          { CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler },
+          zoomPlugin
+        ] = await Promise.all([
+          import('chart.js'),
+          import('chart.js'),
+          import('chartjs-plugin-zoom')
+        ]);
+        
+        ChartJS.register(
+          CategoryScale,
+          LinearScale,
+          PointElement,
+          LineElement,
+          Title,
+          Tooltip,
+          Legend,
+          Filler,
+          zoomPlugin.default
+        );
+      };
+      
+      initializeChart();
     }
   }, []);
 
