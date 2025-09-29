@@ -21,20 +21,6 @@ import {
 } from 'chart.js';
 import zoomPlugin from 'chartjs-plugin-zoom';
 
-if (typeof window !== 'undefined') {
-  ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    Filler,
-    zoomPlugin
-  );
-}
-
 interface Leg {
   id: number;
   fairProbability?: number;
@@ -82,6 +68,19 @@ export default function ScenarioSimulator() {
 
   useEffect(() => {
     setIsClient(true);
+    if (typeof window !== 'undefined') {
+      ChartJS.register(
+        CategoryScale,
+        LinearScale,
+        PointElement,
+        LineElement,
+        Title,
+        Tooltip,
+        Legend,
+        Filler,
+        zoomPlugin
+      );
+    }
   }, []);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
