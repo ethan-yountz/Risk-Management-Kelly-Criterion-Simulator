@@ -313,7 +313,7 @@ class MonteCarloRequest(BaseModel):
     number_of_legs: Optional[int] = None
     estimated_edge: Optional[float] = None
     payout_per_bet: Optional[float] = None
-    num_simulations: int = 10000
+    num_simulations: int = 1000
 
 class SimulationResults(BaseModel):
     probabilityOfProfit: float
