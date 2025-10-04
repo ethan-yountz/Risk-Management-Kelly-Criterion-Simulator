@@ -21,12 +21,12 @@ interface SimulationResults {
   medianFinalBankroll: number;
   riskOfRuin: number;
   confidenceIntervals: {
-    bottom1: number;
-    bottom5: number;
-    bottom10: number;
-    top10: number;
-    top5: number;
-    top1: number;
+    bottom1: { value: number; roi: number };
+    bottom5: { value: number; roi: number };
+    bottom10: { value: number; roi: number };
+    top10: { value: number; roi: number };
+    top5: { value: number; roi: number };
+    top1: { value: number; roi: number };
   };
   simulations: number[];
   simulationProgressions: number[][];
@@ -442,12 +442,12 @@ export default function ScenarioSimulator() {
               <div style={{ marginBottom: "20px" }}>
                 <h3 style={{ marginBottom: "15px" }}>Confidence Intervals</h3>
                 <div style={{ fontFamily: "monospace", fontSize: "14px", lineHeight: "1.6" }}>
-                  <div>Bottom 1%: ${results.confidenceIntervals.bottom1.toFixed(2)}</div>
-                  <div>Bottom 5%: ${results.confidenceIntervals.bottom5.toFixed(2)}</div>
-                  <div>Bottom 10%: ${results.confidenceIntervals.bottom10.toFixed(2)}</div>
-                  <div>Top 10%: ${results.confidenceIntervals.top10.toFixed(2)}</div>
-                  <div>Top 5%: ${results.confidenceIntervals.top5.toFixed(2)}</div>
-                  <div>Top 1%: ${results.confidenceIntervals.top1.toFixed(2)}</div>
+                  <div>Bottom 1%: ${results.confidenceIntervals.bottom1.value.toFixed(2)} ({results.confidenceIntervals.bottom1.roi.toFixed(1)}% ROI)</div>
+                  <div>Bottom 5%: ${results.confidenceIntervals.bottom5.value.toFixed(2)} ({results.confidenceIntervals.bottom5.roi.toFixed(1)}% ROI)</div>
+                  <div>Bottom 10%: ${results.confidenceIntervals.bottom10.value.toFixed(2)} ({results.confidenceIntervals.bottom10.roi.toFixed(1)}% ROI)</div>
+                  <div>Top 10%: ${results.confidenceIntervals.top10.value.toFixed(2)} ({results.confidenceIntervals.top10.roi.toFixed(1)}% ROI)</div>
+                  <div>Top 5%: ${results.confidenceIntervals.top5.value.toFixed(2)} ({results.confidenceIntervals.top5.roi.toFixed(1)}% ROI)</div>
+                  <div>Top 1%: ${results.confidenceIntervals.top1.value.toFixed(2)} ({results.confidenceIntervals.top1.roi.toFixed(1)}% ROI)</div>
                 </div>
               </div>
 

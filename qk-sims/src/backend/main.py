@@ -430,14 +430,39 @@ def run_monte_carlo_simulation(request: MonteCarloRequest) -> SimulationResults:
     median_final = np.median(final_bankrolls)
     risk_of_ruin = np.mean(final_bankrolls <= 0)
     
-    # Confidence intervals
+    # Confidence intervals with ROI calculations
+    bottom1_value = float(np.percentile(final_bankrolls, 1))
+    bottom5_value = float(np.percentile(final_bankrolls, 5))
+    bottom10_value = float(np.percentile(final_bankrolls, 10))
+    top10_value = float(np.percentile(final_bankrolls, 90))
+    top5_value = float(np.percentile(final_bankrolls, 95))
+    top1_value = float(np.percentile(final_bankrolls, 99))
+    
     confidence_intervals = {
-        "bottom1": float(np.percentile(final_bankrolls, 1)),
-        "bottom5": float(np.percentile(final_bankrolls, 5)),
-        "bottom10": float(np.percentile(final_bankrolls, 10)),
-        "top10": float(np.percentile(final_bankrolls, 90)),
-        "top5": float(np.percentile(final_bankrolls, 95)),
-        "top1": float(np.percentile(final_bankrolls, 99))
+        "bottom1": {
+            "value": bottom1_value,
+            "roi": float((bottom1_value - request.starting_bankroll) / request.starting_bankroll * 100)
+        },
+        "bottom5": {
+            "value": bottom5_value,
+            "roi": float((bottom5_value - request.starting_bankroll) / request.starting_bankroll * 100)
+        },
+        "bottom10": {
+            "value": bottom10_value,
+            "roi": float((bottom10_value - request.starting_bankroll) / request.starting_bankroll * 100)
+        },
+        "top10": {
+            "value": top10_value,
+            "roi": float((top10_value - request.starting_bankroll) / request.starting_bankroll * 100)
+        },
+        "top5": {
+            "value": top5_value,
+            "roi": float((top5_value - request.starting_bankroll) / request.starting_bankroll * 100)
+        },
+        "top1": {
+            "value": top1_value,
+            "roi": float((top1_value - request.starting_bankroll) / request.starting_bankroll * 100)
+        }
     }
     
     betting_records = {
